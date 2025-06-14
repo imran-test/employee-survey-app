@@ -1,0 +1,24 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+
+  build:
+    commands:
+      - echo "Zipping backend..."
+      - cd backend
+      - zip -r ../lambda.zip . || echo "Zipping failed"
+      - cd ..
+
+  post_build:
+    commands:
+      - echo "Uploading frontend to S3..."
+      - aws s3 cp frontend/ s3://employee-survey-frontend-bucket/ --recursive
+      - echo "Updating Lambda function..."
+      - aws lambda update-function-code --function-name employeeSurveyHandler --zip-file fileb://lambda.zip
+
+artifacts:
+  files:
+    - lambda.zip
